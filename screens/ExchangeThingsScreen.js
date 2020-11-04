@@ -13,7 +13,7 @@ export default class ExchangeThingsScreen extends React.Component {
             reasonToRequest:"",
             requestId: "",
             requestedThingName: "",
-            requestedItemStatus: "",
+            thingStatus: "",
             docId: "",
             userDocId: "",
             IsRequestedItemRequestActive: ""
@@ -28,7 +28,8 @@ export default class ExchangeThingsScreen extends React.Component {
             'user_id': userId,
             'thing_name': thingName,
             'reason_to_request': reasonToRequest,
-            'request_id': randomRequestId
+            'request_id': randomRequestId,
+            'thing_status': 'requested'
         });
 
         this.getThingRequest();
@@ -36,7 +37,7 @@ export default class ExchangeThingsScreen extends React.Component {
         db.collection('users').where('email_id', '==', this.state.userId).get().then().then((snapshot) => {
             snapshot.forEach((doc) => {
                 db.collection('users').doc(doc.id).update({
-                    IsRequestItemRequestActive: true
+                    IsRequestedItemRequestActive: true
                 });
             });
         });
@@ -59,22 +60,25 @@ export default class ExchangeThingsScreen extends React.Component {
         db.collection('users').where('email_id', '==', this.state.userId).onSnapshot((snapshot) => {
             snapshot.forEach((doc) => {
                 this.setState({
-                    IsRequestedItemRequestActive: doc.data().IsRequestedItemRequestActive 
+                    IsRequestedItemRequestActive: doc.data().IsRequestedItemRequestActive,
+                    userDocId: doc.id
                 });
             });
         });
     }
 
     getThingRequest = () => {
-        var thingRequest = db.collection('requested_things').where('userId', '==', this.state.userId).get().then((snapshot) => {
+        var thingRequest = db.collection('requested_things').where('user_id', '==', this.state.userId).get().then((snapshot) => {
             snapshot.forEach((doc) => {
                 if (doc.data().thing_status !== 'received') {
                     this.setState({
                         requestId: doc.data().request_id,
                         requestedThingName: doc.data().thing_name,
-                        requestedItemStatus: doc.data().thing_status,
+                        thingStatus: doc.data().thing_status,
                         docId: doc.id
                     });
+                    
+                    console.log(doc.data());
                 } 
             });
         });
@@ -111,7 +115,7 @@ export default class ExchangeThingsScreen extends React.Component {
         db.collection('users').where("email_id", "==", this.state.userId).get().then((snapshot) => {
           snapshot.forEach((doc) => {
             db.collection('users').doc(doc.id).update({
-              "IsRequestItemRequestActive": false
+              "IsRequestedItemRequestActive": false
             });
           });
         });
@@ -139,13 +143,13 @@ export default class ExchangeThingsScreen extends React.Component {
             return (
                 <View style={{flex: 1, justifyContent: 'center'}}>
                     <View style={{borderColor: 'orange', borderWidth: 2, justifyContent: 'center', alignItems: 'center', padding: 10, margin: 10}}>
-                        <Text>Book Name</Text>
+                        <Text style={{fontSize: 15, fontWeight: 'bold', textDecorationLine: 'underline'}}>Requested Thing Name</Text>
                         <Text>{this.state.requestedThingName}</Text>
                     </View>
 
                     <View style={{borderColor: 'orange', borderWidth: 2, justifyContent: 'center', alignItems: 'center', padding: 10, margin: 10}}>
-                        <Text>Requested item status</Text>
-                        <Text>{this.state.requestedItemStatus}</Text>
+                        <Text style={{fontSize: 15, fontWeight: 'bold', textDecorationLine: 'underline'}}>Requested item status</Text>
+                        <Text>{this.state.thingStatus}</Text>
                     </View>
 
                     <TouchableOpacity 

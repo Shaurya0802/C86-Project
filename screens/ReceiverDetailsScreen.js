@@ -44,6 +44,16 @@ export default class ReceiverDetailsScreen extends React.Component {
         });
     }
 
+    getUserDetails = () => {
+        db.collection("users").where('email_id','==', this.state.userId).get().then((snapshot)=>{
+            snapshot.forEach((doc) => {
+                this.setState({
+                    username: doc.data().first_name + " " + doc.data().last_name
+                });
+            });
+        });
+    }
+
     updateThingStatus = () => {
         db.collection('all_barters').add({
             thing_name: this.state.thingName,
